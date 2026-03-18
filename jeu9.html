@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Jeu 09 — Trouve l'Intrus !</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#D35400;--creme:#FAF7F2;--encre:#1A1A2E;--gris:#777;--ok:#1A7A3C;--err:#C0392B;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--encre);min-height:100vh;font-size:16px;line-height:1.6;}
+.topbar{background:var(--encre);padding:.7rem 1.4rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.expo-tag{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.5);}
+.jeu-tag{font-size:.65rem;background:var(--accent);color:#fff;padding:.2rem .6rem;border-radius:3rem;font-weight:500;}
+.topbar-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:#fff;}
+#scoreDisplay{font-size:.85rem;font-weight:500;color:rgba(255,255,255,.8);}
+#timer{font-size:.85rem;color:rgba(255,255,255,.55);}
+.main{max-width:820px;margin:0 auto;padding:1.5rem 1.2rem 3rem;}
+.card{background:#fff;border-radius:12px;padding:1.3rem 1.5rem;box-shadow:0 2px 16px rgba(0,0,0,.07);margin-bottom:1.1rem;}
+.q-num{font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:.4rem;}
+.q-text{font-size:1rem;font-weight:500;line-height:1.5;margin-bottom:1rem;}
+.feedback{display:none;font-size:.85rem;font-weight:500;margin-top:.6rem;padding:.45rem .8rem;border-radius:6px;background:rgba(0,0,0,.04);}
+.feedback.show{display:block;}
+.opts{display:flex;flex-direction:column;gap:.45rem;}
+.opt{padding:.6rem 1rem;border:1.5px solid rgba(0,0,0,.12);border-radius:8px;background:#fff;font-size:.9rem;cursor:pointer;text-align:left;transition:all .15s;font-family:'DM Sans',sans-serif;}
+.opt:hover:not(:disabled){border-color:var(--accent);}
+.opt.ok{border-color:var(--ok);background:#edf7f0;color:var(--ok);font-weight:500;}
+.opt.err{border-color:var(--err);background:#fdf0ef;color:var(--err);}
+.vf-row{display:grid;grid-template-columns:1fr auto auto;align-items:start;gap:.7rem;padding:.5rem .2rem;border-bottom:1px solid rgba(0,0,0,.06);font-size:.9rem;}
+.vf-row:last-child{border-bottom:none;}
+.vf-btn{padding:.3rem .8rem;border:1.5px solid rgba(0,0,0,.15);border-radius:6px;font-size:.78rem;font-weight:500;cursor:pointer;background:#fff;transition:all .15s;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.vf-btn:hover:not(:disabled){border-color:var(--accent);}
+.vf-btn.sel-ok{background:var(--ok);color:#fff;border-color:var(--ok);}
+.vf-btn.sel-err{background:var(--err);color:#fff;border-color:var(--err);}
+.vf-btn.hl{border-color:var(--ok);color:var(--ok);font-weight:600;}
+.inp{width:100%;padding:.55rem .85rem;border:1.5px solid rgba(0,0,0,.15);border-radius:8px;font-size:.9rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;}
+.inp:focus{border-color:var(--accent);}
+.inp.ok{border-color:var(--ok);background:#edf7f0;}
+.inp.err{border-color:var(--err);}
+.check-btn{margin-top:.5rem;padding:.45rem 1.1rem;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.word-tag{font-size:.78rem;padding:.22rem .65rem;border-radius:3rem;border:1.5px solid rgba(0,0,0,.15);font-weight:500;display:inline-block;margin:.2rem;}
+.word-tag.found{text-decoration:line-through;border-color:var(--ok);color:var(--ok);background:#edf7f0;}
+.wordsearch{display:inline-grid;gap:2px;grid-template-columns:repeat(12,30px);}
+.ws-cell{width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:600;border:1px solid rgba(0,0,0,.08);border-radius:3px;cursor:pointer;user-select:none;background:#fff;transition:background .1s;}
+.ws-cell:hover{background:rgba(0,0,0,.04);}
+.ws-cell.selected{background:rgba(74,144,217,.22);border-color:rgba(74,144,217,.5);}
+.ws-cell.found{background:rgba(26,122,60,.18);color:var(--ok);border-color:rgba(26,122,60,.35);}
+.frise-date{padding:.5rem .9rem;background:var(--encre);color:#fff;border-radius:7px;font-size:.8rem;font-weight:600;cursor:pointer;margin-bottom:.4rem;}
+.frise-date.matched{background:var(--ok);cursor:default;}
+.frise-evt{padding:.5rem .9rem;border:1.5px dashed rgba(0,0,0,.2);border-radius:7px;font-size:.78rem;cursor:pointer;margin-bottom:.4rem;line-height:1.4;}
+.frise-evt:hover{border-color:var(--accent);}
+.frise-evt.matched{border-color:var(--ok);border-style:solid;background:#edf7f0;cursor:default;}
+.actions{display:flex;gap:.7rem;margin-top:1.3rem;flex-wrap:wrap;}
+.btn{padding:.55rem 1.3rem;border-radius:8px;font-size:.85rem;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .18s;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{opacity:.88;}
+.btn-secondary{background:transparent;border:1.5px solid rgba(0,0,0,.18);color:var(--encre);}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+.result-bar{background:var(--encre);color:#fff;border-radius:12px;padding:1.1rem 1.5rem;text-align:center;display:none;margin-bottom:1.1rem;}
+.result-bar.show{display:block;}
+.rnum{font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:900;color:var(--accent);line-height:1;}
+.notion-box{background:var(--encre);border-radius:12px;overflow:hidden;margin-top:1.3rem;}
+.notion-head{padding:.75rem 1.3rem;}
+.notion-lbl{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:gold;font-weight:600;}
+.notion-titre{font-size:.98rem;color:#fff;font-family:'Playfair Display',serif;display:block;margin-top:.1rem;}
+.notion-body{padding:.9rem 1.3rem;font-size:.86rem;color:rgba(255,255,255,.7);line-height:1.65;}
+.correction{display:none;}
+.correction.show{display:block;}
+.corr-item{padding:.7rem .9rem;border-radius:8px;background:#edf7f0;border-left:3px solid var(--ok);margin-bottom:.5rem;font-size:.85rem;}
+.corr-item strong{color:var(--ok);}
+.corr-bonus{background:#fff8e1;border-left-color:#D4A017;}
+</style>
+</head><body>
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;">
+    <span class="expo-tag">Femmes Ici et Ailleurs</span>
+    <span class="jeu-tag">Jeu 09</span>
+    <span class="topbar-title">Trouve l'Intrus !</span>
+  </div>
+  <div style="display:flex;gap:.8rem;"><span id="scoreDisplay">0 pts</span><span id="timer">⏱ 15:00</span></div>
+</div>
+<div class="main">
+  <div class="result-bar" id="resultBar"><div class="rnum" id="rNum">—</div><p id="rMsg" style="color:rgba(255,255,255,.7);margin-top:.3rem;font-size:.88rem;"></p></div>
+  <div class="card"><div class="q-num">Série 1</div><div class="q-text">Murasaki Shikibu (roman) / Alice Guy (cinéma) / Isadora Duncan (danse) / Bette Nesmith Graham (correcteur liquide)</div><div class="opts"><button class="opt" id="io0_0" onclick="ansI(0,0,3)">Murasaki Shikibu</button><button class="opt" id="io0_1" onclick="ansI(0,1,3)">Alice Guy</button><button class="opt" id="io0_2" onclick="ansI(0,2,3)">Isadora Duncan</button><button class="opt" id="io0_3" onclick="ansI(0,3,3)">Bette Nesmith Graham</button></div><div class="feedback" id="ifb0"></div></div><div class="card"><div class="q-num">Série 2</div><div class="q-text">Marie Curie / Rosalind Franklin / Lise Meitner / Emmy Noether</div><div class="opts"><button class="opt" id="io1_0" onclick="ansI(1,0,3)">Marie Curie</button><button class="opt" id="io1_1" onclick="ansI(1,1,3)">Rosalind Franklin</button><button class="opt" id="io1_2" onclick="ansI(1,2,3)">Lise Meitner</button><button class="opt" id="io1_3" onclick="ansI(1,3,3)">Emmy Noether</button></div><div class="feedback" id="ifb1"></div></div><div class="card"><div class="q-num">Série 3</div><div class="q-text">Ada Lovelace (programme) / Gladys West (GPS) / Shirley Jackson (télécoms) / Hedy Lamarr (wifi)</div><div class="opts"><button class="opt" id="io2_0" onclick="ansI(2,0,0)">Ada Lovelace</button><button class="opt" id="io2_1" onclick="ansI(2,1,0)">Gladys West</button><button class="opt" id="io2_2" onclick="ansI(2,2,0)">Shirley Jackson</button><button class="opt" id="io2_3" onclick="ansI(2,3,0)">Hedy Lamarr</button></div><div class="feedback" id="ifb2"></div></div><div class="card"><div class="q-num">Série 4</div><div class="q-text">Josephine Cochrane (lave-vaisselle) / Mary Anderson (essuie-glace) / Mária Telkes (énergie solaire) / La brasseuse inconnue (bière)</div><div class="opts"><button class="opt" id="io3_0" onclick="ansI(3,0,3)">Josephine Cochrane</button><button class="opt" id="io3_1" onclick="ansI(3,1,3)">Mary Anderson</button><button class="opt" id="io3_2" onclick="ansI(3,2,3)">Mária Telkes</button><button class="opt" id="io3_3" onclick="ansI(3,3,3)">La brasseuse inconnue</button></div><div class="feedback" id="ifb3"></div></div><div class="card"><div class="q-num">Série 5</div><div class="q-text">Sau Lan Wu / Rosalind Franklin / Marie Curie / Annette Kellerman</div><div class="opts"><button class="opt" id="io4_0" onclick="ansI(4,0,3)">Sau Lan Wu</button><button class="opt" id="io4_1" onclick="ansI(4,1,3)">Rosalind Franklin</button><button class="opt" id="io4_2" onclick="ansI(4,2,3)">Marie Curie</button><button class="opt" id="io4_3" onclick="ansI(4,3,3)">Annette Kellerman</button></div><div class="feedback" id="ifb4"></div></div><div class="card"><div class="q-num">Série 6</div><div class="q-text">Elizabeth Magie (Monopoly volé) / Rosalind Franklin (ADN non crédité) / Stephanie Kwolek (kevlar) / Jeanne Villepreux-Power (aquarium)</div><div class="opts"><button class="opt" id="io5_0" onclick="ansI(5,0,2)">Elizabeth Magie</button><button class="opt" id="io5_1" onclick="ansI(5,1,2)">Rosalind Franklin</button><button class="opt" id="io5_2" onclick="ansI(5,2,2)">Stephanie Kwolek</button><button class="opt" id="io5_3" onclick="ansI(5,3,2)">Jeanne Villepreux-Power</button></div><div class="feedback" id="ifb5"></div></div><script>
+var iA={};var iC=[3, 3, 0, 3, 3, 2];
+function ansI(q,ch,cor){if(iA[q])return;iA[q]=true;var ok=ch===cor;for(var j=0;j<4;j++){var b=document.getElementById('io'+q+'_'+j);if(b){b.disabled=true;if(j===cor)b.classList.add('ok');else if(j===ch)b.classList.add('err');}}document.getElementById('ifb'+q).textContent=ok?'Bon intrus !':'Ce n\'est pas le bon intrus.';document.getElementById('ifb'+q).classList.add('show');addScore(ok?1:0);}
+function checkAll(){for(var i=0;i<6;i++)if(!iA[i])ansI(i,-1,iC[i]);showResult();}
+function gameReset(){iA={};for(var i=0;i<6;i++){for(var j=0;j<4;j++){var b=document.getElementById('io'+i+'_'+j);if(b){b.disabled=false;b.className='opt';}}var fb=document.getElementById('ifb'+i);fb.classList.remove('show');fb.textContent='';}}
+</script>
+  <div class="actions">
+    <button class="btn btn-primary" onclick="checkAll()">Vérifier</button>
+    <button class="btn btn-secondary" onclick="showCorrection()">Correction</button>
+    <button class="btn btn-secondary" onclick="resetAll()">↺ Recommencer</button>
+  </div>
+  <div class="correction" id="corrBlock">
+    <h3 style="font-family:'Playfair Display',serif;margin:1.2rem 0 .7rem;font-size:1.05rem;">✅ Correction</h3>
+    <div class="corr-item"><strong>Série 1 : Bette Nesmith Graham</strong> — Bette Nesmith Graham est une inventrice de papeterie. Les trois autres ont créé une forme artistique (littérature, cinéma, danse).</div><div class="corr-item"><strong>Série 2 : Emmy Noether</strong> — Emmy Noether n'a jamais été nominée au Nobel car les maths n'ont pas de prix Nobel. Les trois autres ont été injustement privées d'un Nobel.</div><div class="corr-item"><strong>Série 3 : Ada Lovelace</strong> — Ada Lovelace vivait au XIXe siècle. Gladys West, Shirley Jackson et Hedy Lamarr ont vécu au XXe siècle et leurs inventions sont utilisées aujourd'hui.</div><div class="corr-item"><strong>Série 4 : La brasseuse inconnue</strong> — La brasseuse inconnue est anonyme et représente un groupe. Les trois autres sont des inventeuses identifiées ayant déposé des brevets.</div><div class="corr-item"><strong>Série 5 : Annette Kellerman</strong> — Sau Lan Wu, Rosalind Franklin et Marie Curie sont des scientifiques. Annette Kellerman est une sportive qui a popularisé le maillot de bain une pièce.</div><div class="corr-item"><strong>Série 6 : Stephanie Kwolek</strong> — Elizabeth Magie et Rosalind Franklin ont eu leur travail volé ou ignoré. Stephanie Kwolek a bien été reconnue pour le kevlar — tout comme Jeanne Villepreux-Power pour l'aquarium.</div>
+  </div>
+  <div class="notion-box"><div class="notion-head"><span class="notion-lbl">Notion</span><strong class="notion-titre">La discrimination</strong></div><div class="notion-body">La discrimination, c'est traiter quelqu'un moins favorablement à cause de son genre. Rosalind Franklin, Lise Meitner, Elizabeth Magie : leurs travaux ont été pris par des hommes sans les créditer. En France, l'écart de salaire reste de 16,8 % pour un travail équivalent.</div></div>
+</div>
+<script>
+let score=0,total=0,timerSec=900,timerInt;
+function startTimer(){timerInt=setInterval(function(){timerSec--;var m=Math.floor(timerSec/60),s=timerSec%60;document.getElementById('timer').textContent='⏱ '+m+':'+(s<10?'0':'')+s;if(timerSec<=0)clearInterval(timerInt);},1000);}
+function addScore(pts){score+=pts;total+=1;document.getElementById('scoreDisplay').textContent=Math.round(score*10)/10+' pts';}
+function showResult(){var bar=document.getElementById('resultBar');var pct=total>0?score/total:0;document.getElementById('rNum').textContent=Math.round(score*10)/10+'/'+total;document.getElementById('rMsg').textContent=pct>=.8?'Excellent ! Tu maîtrises bien cette exposition ★':pct>=.5?'Bien joué ! Continue à explorer.':'À retravailler — consulte la correction.';bar.classList.add('show');bar.scrollIntoView({behavior:'smooth'});}
+function showCorrection(){document.getElementById('corrBlock').classList.add('show');document.getElementById('corrBlock').scrollIntoView({behavior:'smooth'});}
+function resetAll(){clearInterval(timerInt);score=0;total=0;timerSec=900;document.getElementById('scoreDisplay').textContent='0 pts';document.getElementById('timer').textContent='⏱ 15:00';document.getElementById('resultBar').classList.remove('show');document.getElementById('corrBlock').classList.remove('show');gameReset();startTimer();}
+startTimer();
+</script></body></html>

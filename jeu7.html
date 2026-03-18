@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Jeu 07 — Texte à Trous — Inventions au Féminin</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#2980B9;--creme:#FAF7F2;--encre:#1A1A2E;--gris:#777;--ok:#1A7A3C;--err:#C0392B;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--encre);min-height:100vh;font-size:16px;line-height:1.6;}
+.topbar{background:var(--encre);padding:.7rem 1.4rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.expo-tag{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.5);}
+.jeu-tag{font-size:.65rem;background:var(--accent);color:#fff;padding:.2rem .6rem;border-radius:3rem;font-weight:500;}
+.topbar-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:#fff;}
+#scoreDisplay{font-size:.85rem;font-weight:500;color:rgba(255,255,255,.8);}
+#timer{font-size:.85rem;color:rgba(255,255,255,.55);}
+.main{max-width:820px;margin:0 auto;padding:1.5rem 1.2rem 3rem;}
+.card{background:#fff;border-radius:12px;padding:1.3rem 1.5rem;box-shadow:0 2px 16px rgba(0,0,0,.07);margin-bottom:1.1rem;}
+.q-num{font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:.4rem;}
+.q-text{font-size:1rem;font-weight:500;line-height:1.5;margin-bottom:1rem;}
+.feedback{display:none;font-size:.85rem;font-weight:500;margin-top:.6rem;padding:.45rem .8rem;border-radius:6px;background:rgba(0,0,0,.04);}
+.feedback.show{display:block;}
+.opts{display:flex;flex-direction:column;gap:.45rem;}
+.opt{padding:.6rem 1rem;border:1.5px solid rgba(0,0,0,.12);border-radius:8px;background:#fff;font-size:.9rem;cursor:pointer;text-align:left;transition:all .15s;font-family:'DM Sans',sans-serif;}
+.opt:hover:not(:disabled){border-color:var(--accent);}
+.opt.ok{border-color:var(--ok);background:#edf7f0;color:var(--ok);font-weight:500;}
+.opt.err{border-color:var(--err);background:#fdf0ef;color:var(--err);}
+.vf-row{display:grid;grid-template-columns:1fr auto auto;align-items:start;gap:.7rem;padding:.5rem .2rem;border-bottom:1px solid rgba(0,0,0,.06);font-size:.9rem;}
+.vf-row:last-child{border-bottom:none;}
+.vf-btn{padding:.3rem .8rem;border:1.5px solid rgba(0,0,0,.15);border-radius:6px;font-size:.78rem;font-weight:500;cursor:pointer;background:#fff;transition:all .15s;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.vf-btn:hover:not(:disabled){border-color:var(--accent);}
+.vf-btn.sel-ok{background:var(--ok);color:#fff;border-color:var(--ok);}
+.vf-btn.sel-err{background:var(--err);color:#fff;border-color:var(--err);}
+.vf-btn.hl{border-color:var(--ok);color:var(--ok);font-weight:600;}
+.inp{width:100%;padding:.55rem .85rem;border:1.5px solid rgba(0,0,0,.15);border-radius:8px;font-size:.9rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;}
+.inp:focus{border-color:var(--accent);}
+.inp.ok{border-color:var(--ok);background:#edf7f0;}
+.inp.err{border-color:var(--err);}
+.check-btn{margin-top:.5rem;padding:.45rem 1.1rem;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.word-tag{font-size:.78rem;padding:.22rem .65rem;border-radius:3rem;border:1.5px solid rgba(0,0,0,.15);font-weight:500;display:inline-block;margin:.2rem;}
+.word-tag.found{text-decoration:line-through;border-color:var(--ok);color:var(--ok);background:#edf7f0;}
+.wordsearch{display:inline-grid;gap:2px;grid-template-columns:repeat(12,30px);}
+.ws-cell{width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:600;border:1px solid rgba(0,0,0,.08);border-radius:3px;cursor:pointer;user-select:none;background:#fff;transition:background .1s;}
+.ws-cell:hover{background:rgba(0,0,0,.04);}
+.ws-cell.selected{background:rgba(74,144,217,.22);border-color:rgba(74,144,217,.5);}
+.ws-cell.found{background:rgba(26,122,60,.18);color:var(--ok);border-color:rgba(26,122,60,.35);}
+.frise-date{padding:.5rem .9rem;background:var(--encre);color:#fff;border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer;margin-bottom:.4rem;}
+.frise-date.matched{background:var(--ok);cursor:default;}
+.frise-evt{padding:.5rem .9rem;border:1.5px dashed rgba(0,0,0,.2);border-radius:7px;font-size:.8rem;cursor:pointer;margin-bottom:.4rem;line-height:1.4;}
+.frise-evt:hover{border-color:var(--accent);}
+.frise-evt.matched{border-color:var(--ok);border-style:solid;background:#edf7f0;cursor:default;}
+.actions{display:flex;gap:.7rem;margin-top:1.3rem;flex-wrap:wrap;}
+.btn{padding:.55rem 1.3rem;border-radius:8px;font-size:.85rem;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .18s;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{opacity:.88;}
+.btn-secondary{background:transparent;border:1.5px solid rgba(0,0,0,.18);color:var(--encre);}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+.result-bar{background:var(--encre);color:#fff;border-radius:12px;padding:1.1rem 1.5rem;text-align:center;display:none;margin-bottom:1.1rem;}
+.result-bar.show{display:block;}
+.rnum{font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:900;color:var(--accent);line-height:1;}
+.notion-box{background:var(--encre);border-radius:12px;overflow:hidden;margin-top:1.3rem;}
+.notion-head{padding:.75rem 1.3rem;}
+.notion-lbl{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:gold;font-weight:600;}
+.notion-titre{font-size:.98rem;color:#fff;font-family:'Playfair Display',serif;display:block;margin-top:.1rem;}
+.notion-body{padding:.9rem 1.3rem;font-size:.86rem;color:rgba(255,255,255,.7);line-height:1.65;}
+.correction{display:none;}
+.correction.show{display:block;}
+.corr-item{padding:.7rem .9rem;border-radius:8px;background:#edf7f0;border-left:3px solid var(--ok);margin-bottom:.5rem;font-size:.85rem;}
+.corr-item strong{color:var(--ok);}
+.corr-bonus{background:#fff8e1;border-left-color:#D4A017;}
+</style>
+</head><body>
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;">
+    <span class="expo-tag">Femmes Ici et Ailleurs</span>
+    <span class="jeu-tag">Jeu 07</span>
+    <span class="topbar-title">Texte à Trous — Inventions au Féminin</span>
+  </div>
+  <div style="display:flex;gap:.8rem;"><span id="scoreDisplay">0 pts</span><span id="timer">⏱ 15:00</span></div>
+</div>
+<div class="main">
+  <div class="result-bar" id="resultBar"><div class="rnum" id="rNum">—</div><p id="rMsg" style="color:rgba(255,255,255,.7);margin-top:.3rem;font-size:.88rem;"></p></div>
+  <div class="card"><div class="q-num">Mots à placer</div><div style="margin-top:.3rem;"><span class="word-tag">distillation</span><span class="word-tag">polymères</span><span class="word-tag">correcteur liquide</span><span class="word-tag">bain-marie</span><span class="word-tag">kevlar</span><span class="word-tag">solaire</span><span class="word-tag">alchimie</span><span class="word-tag">aquariums</span><span class="word-tag">pieds nus</span><span class="word-tag">fréquence</span><span class="word-tag">télécommunications</span><span class="word-tag">essuie-glace</span><span class="word-tag">roman</span><span class="word-tag">propriétaire</span><span class="word-tag">fiction</span><span class="word-tag">fax</span></div></div><div class="card"><div class="q-num">Marie dite « la Juive »</div><div style="font-size:.92rem;line-height:1.9;">Marie dite « la Juive » était l'une des fondatrices de l'<input class="inp" style="display:inline-block;width:110px;vertical-align:middle" id="ti0_0" placeholder="…">. Elle a mis au point le <input class="inp" style="display:inline-block;width:110px;vertical-align:middle" id="ti0_1" placeholder="…">, une méthode de chauffe douce utilisée pour la <input class="inp" style="display:inline-block;width:132px;vertical-align:middle" id="ti0_2" placeholder="…">.</div><button class="check-btn" onclick="chkT(0)">Vérifier</button><div class="feedback" id="tfb0"></div></div><div class="card"><div class="q-num">Mária Telkes</div><div style="font-size:.92rem;line-height:1.9;">Mária Telkes travaillait sur l'énergie <input class="inp" style="display:inline-block;width:110px;vertical-align:middle" id="ti1_0" placeholder="…">. Elle a créé un distillateur <input class="inp" style="display:inline-block;width:110px;vertical-align:middle" id="ti1_1" placeholder="…"> pour produire de l'eau potable à partir de l'eau de mer.</div><button class="check-btn" onclick="chkT(1)">Vérifier</button><div class="feedback" id="tfb1"></div></div><div class="card"><div class="q-num">Bette Nesmith Graham</div><div style="font-size:.92rem;line-height:1.9;">Bette Nesmith Graham a inventé le <input class="inp" style="display:inline-block;width:198px;vertical-align:middle" id="ti2_0" placeholder="…">. Elle tapait à la machine et voulait effacer ses fautes sans tout recommencer.</div><button class="check-btn" onclick="chkT(2)">Vérifier</button><div class="feedback" id="tfb2"></div></div><div class="card"><div class="q-num">Stephanie Kwolek</div><div style="font-size:.92rem;line-height:1.9;">Stephanie Kwolek cherchait un matériau solide pour remplacer l'acier. En mélangeant deux <input class="inp" style="display:inline-block;width:110px;vertical-align:middle" id="ti3_0" placeholder="…">, elle a créé le <input class="inp" style="display:inline-block;width:110px;vertical-align:middle" id="ti3_1" placeholder="…">, cinq fois plus résistant que l'acier.</div><button class="check-btn" onclick="chkT(3)">Vérifier</button><div class="feedback" id="tfb3"></div></div><div class="card"><div class="q-num">Jeanne Villepreux-Power</div><div style="font-size:.92rem;line-height:1.9;">Jeanne Villepreux-Power construisait des enclos en verre qu'elle nommait « cages ». Ce sont les ancêtres des <input class="inp" style="display:inline-block;width:110px;vertical-align:middle" id="ti4_0" placeholder="…">.</div><button class="check-btn" onclick="chkT(4)">Vérifier</button><div class="feedback" id="tfb4"></div></div><div class="card"><div class="q-num">Isadora Duncan</div><div style="font-size:.92rem;line-height:1.9;">Isadora Duncan refusait de danser avec des collants et des pointes. Elle préférait danser <input class="inp" style="display:inline-block;width:110px;vertical-align:middle" id="ti5_0" placeholder="…">, avec des robes drapées d'inspiration antique.</div><button class="check-btn" onclick="chkT(5)">Vérifier</button><div class="feedback" id="tfb5"></div></div><div class="card"><div class="q-num">Hedy Lamarr</div><div style="font-size:.92rem;line-height:1.9;">Hedy Lamarr co-invente un système de communication par ondes radio avec un signal changeant de <input class="inp" style="display:inline-block;width:110px;vertical-align:middle" id="ti6_0" placeholder="…">. Cette technique est à l'origine du wifi et du GPS.</div><button class="check-btn" onclick="chkT(6)">Vérifier</button><div class="feedback" id="tfb6"></div></div><div class="card"><div class="q-num">Shirley Jackson</div><div style="font-size:.92rem;line-height:1.9;">Shirley Jackson, première afro-américaine docteure du MIT, mène des recherches qui permettent le développement des <input class="inp" style="display:inline-block;width:198px;vertical-align:middle" id="ti7_0" placeholder="…"> modernes : le <input class="inp" style="display:inline-block;width:110px;vertical-align:middle" id="ti7_1" placeholder="…">, la fibre optique, l'identification des appels.</div><button class="check-btn" onclick="chkT(7)">Vérifier</button><div class="feedback" id="tfb7"></div></div><div class="card"><div class="q-num">Mary Anderson</div><div style="font-size:.92rem;line-height:1.9;">Mary Anderson remarque en 1902 à New York que le conducteur de son trolley doit souvent s'arrêter pour essuyer la neige du pare-brise. Elle invente le premier <input class="inp" style="display:inline-block;width:132px;vertical-align:middle" id="ti8_0" placeholder="…">.</div><button class="check-btn" onclick="chkT(8)">Vérifier</button><div class="feedback" id="tfb8"></div></div><div class="card"><div class="q-num">Murasaki Shikibu</div><div style="font-size:.92rem;line-height:1.9;">Murasaki Shikibu écrit vers l'an 1010 Le Dit du Genji, considéré comme la première création <input class="inp" style="display:inline-block;width:110px;vertical-align:middle" id="ti9_0" placeholder="…"> au monde. Cet ouvrage compte 2000 pages et 430 personnages.</div><button class="check-btn" onclick="chkT(9)">Vérifier</button><div class="feedback" id="tfb9"></div></div><div class="card"><div class="q-num">Elizabeth Magie</div><div style="font-size:.92rem;line-height:1.9;">Elizabeth Magie crée en 1903 le « Jeu du <input class="inp" style="display:inline-block;width:132px;vertical-align:middle" id="ti10_0" placeholder="…"> », pour dénoncer l'oppression des propriétaires immobiliers. Charles Darrow s'en empare et le transforme en Monopoly.</div><button class="check-btn" onclick="chkT(10)">Vérifier</button><div class="feedback" id="tfb10"></div></div><div class="card"><div class="q-num">Alice Guy</div><div style="font-size:.92rem;line-height:1.9;">Alice Guy convainc en 1896 son patron Léon Gaumont de la laisser réaliser des films de <input class="inp" style="display:inline-block;width:110px;vertical-align:middle" id="ti11_0" placeholder="…">, au lieu de simplement filmer des paysages.</div><button class="check-btn" onclick="chkT(11)">Vérifier</button><div class="feedback" id="tfb11"></div></div><script>
+var tA={};var tW=[["alchimie", "bain-marie", "distillation"], ["solaire", "solaire"], ["correcteur liquide"], ["polym\u00e8res", "kevlar"], ["aquariums"], ["pieds nus"], ["fr\u00e9quence"], ["t\u00e9l\u00e9communications", "fax"], ["essuie-glace"], ["roman"], ["propri\u00e9taire"], ["fiction"]];
+function norm(s){return(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/ /g,'').trim();}
+function chkT(i){if(tA[i])return;var ok=true;tW[i].forEach(function(w,j){var inp=document.getElementById('ti'+i+'_'+j);if(!inp)return;var m=norm(inp.value)===norm(w);if(!m)ok=false;inp.className='inp '+(m?'ok':'err');inp.disabled=true;});tA[i]=ok;var fb=document.getElementById('tfb'+i);fb.textContent=ok?'Parfait !':'Réponse(s) attendue(s) : '+tW[i].join(', ');fb.classList.add('show');addScore(ok?1:0);}
+function checkAll(){for(var i=0;i<12;i++)if(!tA[i])chkT(i);showResult();}
+function gameReset(){tA={};for(var i=0;i<12;i++){tW[i].forEach(function(_,j){var inp=document.getElementById('ti'+i+'_'+j);if(inp){inp.value='';inp.className='inp';inp.disabled=false;}});var fb=document.getElementById('tfb'+i);fb.classList.remove('show');fb.textContent='';}}
+</script>
+  <div class="actions">
+    <button class="btn btn-primary" onclick="checkAll()">Vérifier</button>
+    <button class="btn btn-secondary" onclick="showCorrection()">Correction</button>
+    <button class="btn btn-secondary" onclick="resetAll()">Recommencer</button>
+  </div>
+  <div class="correction" id="corrBlock">
+    <h3 style="font-family:'Playfair Display',serif;margin:1.2rem 0 .7rem;font-size:1.05rem;">Correction</h3>
+    <div class="corr-item"><strong>Marie dite « la Juive »</strong> — alchimie, bain-marie, distillation</div><div class="corr-item"><strong>Mária Telkes</strong> — solaire, solaire</div><div class="corr-item"><strong>Bette Nesmith Graham</strong> — correcteur liquide</div><div class="corr-item"><strong>Stephanie Kwolek</strong> — polymères, kevlar</div><div class="corr-item"><strong>Jeanne Villepreux-Power</strong> — aquariums</div><div class="corr-item"><strong>Isadora Duncan</strong> — pieds nus</div><div class="corr-item"><strong>Hedy Lamarr</strong> — fréquence</div><div class="corr-item"><strong>Shirley Jackson</strong> — télécommunications, fax</div><div class="corr-item"><strong>Mary Anderson</strong> — essuie-glace</div><div class="corr-item"><strong>Murasaki Shikibu</strong> — roman</div><div class="corr-item"><strong>Elizabeth Magie</strong> — propriétaire</div><div class="corr-item"><strong>Alice Guy</strong> — fiction</div>
+  </div>
+  <div class="notion-box"><div class="notion-head"><span class="notion-lbl">Notion</span><strong class="notion-titre">Le droit à l'éducation</strong></div><div class="notion-body">Le droit à l'éducation est reconnu par la Convention des droits de l'enfant (1989). Pourtant, 130 millions de filles dans le monde n'ont pas accès à l'école. Murasaki Shikibu a appris le chinois en secret car c'était interdit aux filles. L'égal accès au savoir est la première des égalités.</div></div>
+</div>
+<script>
+var score=0,total=0,timerSec=900,timerInt;
+function startTimer(){timerInt=setInterval(function(){timerSec--;var m=Math.floor(timerSec/60),s=timerSec%60;document.getElementById('timer').textContent='⏱ '+m+':'+(s<10?'0':'')+s;if(timerSec<=0)clearInterval(timerInt);},1000);}
+function addScore(pts){score+=pts;total+=1;document.getElementById('scoreDisplay').textContent=Math.round(score*10)/10+' pts';}
+function showResult(){var bar=document.getElementById('resultBar');var pct=total>0?score/total:0;document.getElementById('rNum').textContent=Math.round(score*10)/10+'/'+total;document.getElementById('rMsg').textContent=pct>=.8?'Excellent ! Tu maîtrises bien cette exposition !':pct>=.5?'Bien joué ! Continue à explorer.':'À retravailler — consulte la correction.';bar.classList.add('show');bar.scrollIntoView({behavior:'smooth'});}
+function showCorrection(){document.getElementById('corrBlock').classList.add('show');document.getElementById('corrBlock').scrollIntoView({behavior:'smooth'});}
+function resetAll(){clearInterval(timerInt);score=0;total=0;timerSec=900;document.getElementById('scoreDisplay').textContent='0 pts';document.getElementById('timer').textContent='⏱ 15:00';document.getElementById('resultBar').classList.remove('show');document.getElementById('corrBlock').classList.remove('show');gameReset();startTimer();}
+startTimer();
+</script></body></html>
